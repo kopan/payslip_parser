@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			iframe {
+				width : 49%;
+				height : 550px;
+				float:left;
+			}
+
+			.result {
+				width: 40%;
+				float: left;
+				border: 1px solid #2d2d2d;
+				border-collapse: collapse;
+				padding:20px;
+			}
+		</style>
+		<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+		<script>
+			$(function() {
+				var cnt = 0;
+				var password = {};
+				var data = [{}, {}];
+
+				for(var i = 1; i < 13; ++i) {
+					$("<iframe />", {
+						id : "iframe_" + i,
+						src : "./" + i + ".html"
+					}).on("load", function() {
+						cnt++;
+						if(cnt === 12 ) {
+							exec();
+							printData();
+						}
+					}).appendTo("body");
+				}
+
+				var exec = function() {
+					for(var i = 1; i < 13; ++i) {
+						var $iframe = $("#iframe_" + i).contents();
+						var $pwd = $iframe.find("#pwd");
+						var maxlength = $pwd.prop("maxlength");
+						var	_window = $("#iframe_" + i).get(0).contentWindow;
+
+						_window.alert = function(a) {};
+
+						if(password[maxlength] === undefined) {
+							var temp = $iframe.find("script").text().match('(\\\\x[0-9][0-9])+')[0].split("\\x");
+							var answer = "";
+
+							for(var j = 1; j < temp.length; ++j) {
+								answer += String.fromCharCode(parseInt(temp[j], 16)) + "";
+							}
+
+							var start = maxlength == 7 ? 1000000 : 600101;
+							var end = maxlength == 7 ? 3000000 : 991232;
+							for(var j = start; j < end; ++j) {
+								if( j << j == answer) {
+									password[maxlength] = j;
+									break;
+								}
+							}
+						}
+
+						$pwd.val(password[maxlength]);
+						_window.ViewPayPaper();
+
+						var $tr = $iframe.find("table").eq(3).find("table").eq(0).find("tbody tr");
+						
+						var data_index = 0;
+						for(var j = 0; j < $tr.length; j = j + 2) {
+							var $td = $tr.eq(j).find("td, th");
+
+							if($td.eq(0).prop("colspan") > 1) {
+								j -= 3;
+								continue;
+							}
+
+							var correction = 0;
+								
+							if($td.eq(0).prop("rowspan") > 1) {
+								correction = 1;
+								if(j > 0) 
+									data_index++;
+							}
+
+							for(var k = 0 + correction; k < $td.length; ++k) {
+								var label = $td.eq(k).text();
+								if(label === "") continue;
+								if(data[data_index][label] === undefined)
+									data[data_index][$td.eq(k).text()] = 0;
+
+								data[data_index][$td.eq(k).text()] += Number($tr.eq(j+1).find("td").eq(k - correction).text().replace(/,/g, ''));
+							}
+						}
+					}
+				};
+
+				var numberFormat = function(txt) {
+					txt = txt + "";
+					if(Number(txt) >= 0) {
+						return txt.split( /(?=(?:\d{3})+(?:\.|$))/g ).join( "," )
+					} else {
+						return "-" + txt.substr(1, txt.length).split( /(?=(?:\d{3})+(?:\.|$))/g ).join( "," )
+					}
+				};
+
+				var printData = function() {
+					var sum = 0;
+					for(var key in data[0]) {
+						var value = data[0][key];
+						$("#pay tbody").append("<tr><td>" + key + "</td><td>" + numberFormat(value) + "</td></tr>");
+
+						sum += value;
+					}
+					$("#pay tbody").append("<tr><td>총액</td><td>" + numberFormat(sum) + "</td></tr>");
+
+					for(var key in data[1]) {
+						$("#deduct tbody").append("<tr><td>" + key + "</td><td>" + numberFormat(data[1][key]) + "</td></tr>");
+					}
+				};
+			});
+		</script>
+	</head>
+	<body>
+		<div style="margin-bottom:10px;padding:30px;width:80%">
+			<table id="pay" class="result" border="1">
+				<thead>
+					<tr>
+						<th colspan="2">지급 내역</th>
+					</tr>
+					<tr>
+						<th>내역</th>
+						<th>금액</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+
+			<table id="deduct" class="result" border="1">
+				<thead>
+					<tr>
+						<th colspan="2">공제 내역</th>
+					</tr>
+					<tr>
+						<th>내역</th>
+						<th>금액</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+			<div style="clear:both"></div>
+		</div>
+
+	</body>
+</html>
