@@ -29,6 +29,7 @@
 						src : "./" + i + ".html"
 					}).on("load", function() {
 						cnt++;
+						console.log(cnt);
 						if(cnt === 12 ) {
 							exec();
 							printData();
@@ -43,7 +44,11 @@
 						var maxlength = $pwd.prop("maxlength");
 						var	_window = $("#iframe_" + i).get(0).contentWindow;
 
-						_window.alert = function(a) {};
+						try {
+							_window.alert = function(a) {};
+						} catch (e) {
+							continue;
+						}
 
 						if(password[maxlength] === undefined) {
 							var temp = $iframe.find("script").text().match('(\\\\x[0-9][0-9])+')[0].split("\\x");
