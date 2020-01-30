@@ -18,10 +18,14 @@
 		</style>
 		<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 		<script>
-			$(function() {
+			function runFunction(inputPassword) {
 				var cnt = 0;
 				var password = {};
 				var data = [{}, {}];
+				
+				
+				var splitPW = inputPassword.split("-");
+				
 
 				for(var i = 1; i < 13; ++i) {
 					$("<iframe />", {
@@ -51,20 +55,13 @@
 						}
 
 						if(password[maxlength] === undefined) {
-							var temp = $iframe.find("script").text().match('(\\\\x[0-9][0-9])+')[0].split("\\x");
-							var answer = "";
-
-							for(var j = 1; j < temp.length; ++j) {
-								answer += String.fromCharCode(parseInt(temp[j], 16)) + "";
+							if(maxlength === 6)
+							{
+								password[maxlength] = splitPW[0];
 							}
-
-							var start = maxlength == 7 ? 1000000 : 600101;
-							var end = maxlength == 7 ? 3000000 : 991232;
-							for(var j = start; j < end; ++j) {
-								if( j << j == answer) {
-									password[maxlength] = j;
-									break;
-								}
+							else
+							{
+								password[maxlength] = splitPW[1];
 							}
 						}
 
@@ -125,10 +122,12 @@
 						$("#deduct tbody").append("<tr><td>" + key + "</td><td>" + numberFormat(data[1][key]) + "</td></tr>");
 					}
 				};
-			});
+			}
 		</script>
 	</head>
 	<body>
+	<input type=text name="password">
+	<input type=button onClick="runFunction(document.getElementsByName('password')[0].value)" value="run">
 		<div style="margin-bottom:10px;padding:30px;width:80%">
 			<table id="pay" class="result" border="1">
 				<thead>
